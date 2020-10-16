@@ -52,20 +52,17 @@ module.exports.getAllArticles = (req, res, next) => {
 };
 
 module.exports.deleteArticle = (req, res, next) => {
-  Articles.findById(req.params._id)
+  const currentOwner = req.user._id;
+  Articles.findOne({ _id: req.params._id }).select('+owner')
     .orFail()
     .catch(() => {
       throw new NotFoundError({ message: `Kарточка с идентификатором ${req.params.id} не найдена` });
     })
-    .then((card) => {
-      if (card.owner && card.owner.toString() !== req.user._id) {
-        throw new DeleteArticleError({ message: 'Запрос некорректен: недостаточно прав' });
-      }
-      Articles.findByIdAndDelete(req.params._id)
-        .then((article) => {
-          res.send({ data: article });
-        })
-        .catch(next);
+    .then((article) => {
+      console.log(article);
+      if (String(article.owner) !== currentOwner) throw new DeleteArticleError({ message: 'Запрос некорректен: недостаточно прав' });
+      return Articles.findByIdAndDelete(article._id);
     })
+    .then((article) => res.send({ message: `Статья ${article.title} успешно удалена` }))
     .catch(next);
 };
