@@ -1,7 +1,6 @@
 const Articles = require('../models/article');
 const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
-const DeleteArticleError = require('../errors/DeleteArticleError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.createArticle = (req, res, next) => {
   const {
@@ -56,13 +55,12 @@ module.exports.deleteArticle = (req, res, next) => {
   Articles.findOne({ _id: req.params._id }).select('+owner')
     .orFail()
     .catch(() => {
-      throw new NotFoundError({ message: `Kарточка с идентификатором ${req.params.id} не найдена` });
+      throw new BadRequestError({ message: 'Kарточка с таким идентификатором не найдена' });
     })
     .then((article) => {
-      console.log(article);
-      if (String(article.owner) !== currentOwner) throw new DeleteArticleError({ message: 'Запрос некорректен: недостаточно прав' });
-      return Articles.findByIdAndDelete(article._id);
+      if (String(article.owner) !== currentOwner) throw new ForbiddenError({ message: 'Запрос некорректен: недостаточно прав' });
+      return Articles.deleteOne(article);
     })
-    .then((article) => res.send({ message: `Статья ${article.title} успешно удалена` }))
+    .then(() => res.send({ message: 'Статья успешно удалена' }))
     .catch(next);
 };

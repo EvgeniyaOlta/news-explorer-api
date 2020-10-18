@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
-const TokenError = require('../errors/TokenError');
+const AuthorizationError = require('../errors/AuthorizationError');
 const ConflictError = require('../errors/ConflictError');
 
 module.exports.getUser = (req, res, next) => {
@@ -51,7 +51,7 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .catch(() => {
-      throw new TokenError({ message: `Пользователь с идентификатором ${req.body.email} не найден` });
+      throw new AuthorizationError({ message: `Пользователь с идентификатором ${req.body.email} не найден` });
     })
     .then((user) => {
       const token = jwt.sign(
