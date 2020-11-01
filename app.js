@@ -14,7 +14,9 @@ const {
 const { login, createUser } = require('./controllers/users.js');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+
 const NotFoundError = require('./errors/NotFoundError');
+
 const { PORT = 3000 } = process.env;
 
 app.use(cors({ origin: true }));
