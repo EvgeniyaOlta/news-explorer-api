@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -15,17 +14,14 @@ const {
 const { login, createUser } = require('./controllers/users.js');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-
-
 const NotFoundError = require('./errors/NotFoundError');
-
 const { PORT = 3000 } = process.env;
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors({ origin: true }));
 
+app.use(bodyParser.json());
+
+app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -52,17 +48,13 @@ app.post('/signup', celebrate({
 app.use(auth);
 
 app.use('/users', usersRouter);
-
 app.use('/articles', articlesRouter);
-
 app.use(() => {
   throw new NotFoundError({ message: 'Запрашиваемый ресурс не найден' });
 });
 
 app.use(errorLogger);
-
 app.use(errors());
-
 app.use((err, req, res, next) => {
   if (err.status === '500' || err.status === undefined) {
     res.status(500).send({ message: `На сервере произошла ошибка: ${err.message}` });
