@@ -51,12 +51,16 @@ module.exports.getAllArticles = (req, res, next) => {
 };
 
 module.exports.deleteArticle = (req, res, next) => {
+  const currentOwner = req.user._id;
   Articles.findOne({ _id: req.params._id }).select('+owner')
     .orFail()
     .catch(() => {
       throw new BadRequestError({ message: 'Kарточка с таким идентификатором не найдена' });
     })
-    .then((article) => Articles.deleteOne(article))
+    .then((article) => {
+      if (String(article.owner) !== currentOwner) throw new ForbiddenError({ message: 'Запрос некорректен: недостаточно прав' });
+      return Articles.deleteOne(article);
+    })
     .then(() => res.send({ message: 'Статья успешно удалена' }))
     .catch(next);
 };
