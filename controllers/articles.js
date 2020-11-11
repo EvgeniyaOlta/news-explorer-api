@@ -37,6 +37,7 @@ module.exports.createArticle = (req, res, next) => {
           source: article.source,
           link: article.link,
           image: article.image,
+          owner: req.user._id,
         },
       });
     })
